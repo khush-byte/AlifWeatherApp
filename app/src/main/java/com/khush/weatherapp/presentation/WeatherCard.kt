@@ -17,6 +17,7 @@ import java.util.Date
 
 @Composable
 fun WeatherCard(
+    location: String,
     state: WeatherState,
     backgroundColor: Color,
     modifier: Modifier = Modifier
@@ -34,15 +35,13 @@ fun WeatherCard(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Today, ${
-                        data.time.format(
-                            DateTimeFormatter.ofPattern("dd.M.yyyy")
-                        )
-                    }",
+                    text = data.time.format(
+                        DateTimeFormatter.ofPattern("EEEE, dd.M.yyyy")
+                    ),
                     modifier = Modifier.align(Alignment.Start),
                     color = Color.White
                 )
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 Image(
                     painter = painterResource(id = data.weatherType.iconRes),
                     contentDescription = null,
@@ -61,6 +60,12 @@ fun WeatherCard(
                     color = Color.White
                 )
                 Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = location,
+                    fontSize = 28.sp,
+                    color = Color.White
+                )
+                Spacer(modifier = Modifier.height(8.dp))
             }
         }
     }

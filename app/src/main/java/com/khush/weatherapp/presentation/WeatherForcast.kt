@@ -10,24 +10,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun WeatherForecast(
+    index: Int,
     state: WeatherState,
     modifier: Modifier = Modifier
 ) {
-    state.weatherInfo?.weatherDataPerDay?.get(0)?.let { data ->
+    state.weatherInfo?.weatherDataPerDay?.get(index)?.let { data ->
         Column(
             modifier = modifier
                 .fillMaxWidth()
                 .padding(horizontal = 0.dp)
         ) {
             Text(
-                text = "Today",
-                fontSize = 20.sp,
-                color = Color.White,
+                text = "Hourly weather forecast:",
+                fontSize = 18.sp,
+                color = Color.Gray,
                 modifier = Modifier
-                    .padding(horizontal = 18.dp)
+                    .padding(horizontal = 16.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
             LazyRow(content = {
