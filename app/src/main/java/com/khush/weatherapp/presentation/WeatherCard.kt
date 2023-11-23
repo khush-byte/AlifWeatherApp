@@ -1,33 +1,24 @@
 package com.khush.weatherapp.presentation
 
 
-import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-
-
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.RadioButton
-import androidx.compose.material.RadioButtonColors
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
@@ -46,23 +37,28 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.Popup
-import androidx.compose.ui.window.PopupProperties
 import com.khush.weatherapp.R
-import com.khush.weatherapp.presentation.MainActivity.Companion.TAG
 import com.khush.weatherapp.presentation.MainActivity.Companion.degreeType
 import java.math.RoundingMode
-import java.text.DecimalFormat
 import java.time.format.DateTimeFormatter
 
+// Composable function to display the weather card
+private var activity: MainActivity? = null
 @Composable
 fun WeatherCard(
+    _activity: MainActivity,
     location: String,
     state: WeatherState,
     backgroundColor: Color,
     modifier: Modifier = Modifier
 ) {
+    // Set the current activity
+    activity = _activity
+
+    // Set weather data if it is available
     state.weatherInfo?.currentWeatherData?.let { data ->
+
+        // Display a card with weather information
         Card(
             backgroundColor = backgroundColor,
             shape = RoundedCornerShape(10.dp),
@@ -74,15 +70,21 @@ fun WeatherCard(
                     .padding(12.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // State for managing the display of a dialog box
                 val showDialog = remember { mutableStateOf(false) }
-                if(showDialog.value) {
+
+                // Show dialog box if the state is true
+                if (showDialog.value) {
                     DialogBox(
-                        onDismiss = {showDialog.value = false}
+                        onDismiss = { showDialog.value = false }
                     )
                 }
-                Box( modifier = Modifier
-                    .fillMaxWidth()
-                    .height(36.dp)) {
+                // Date and settings button row
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(36.dp)
+                ) {
                     Text(
                         text = data.time.format(
                             DateTimeFormatter.ofPattern("EEEE, dd.M.yyyy")
@@ -92,6 +94,8 @@ fun WeatherCard(
                             .padding(horizontal = 10.dp),
                         color = Color.White
                     )
+
+                    // Button to open settings dialog
                     OutlinedButton(
                         colors = ButtonDefaults.outlinedButtonColors(backgroundColor = Color.Transparent),
                         border = BorderStroke(0.dp, Color.Transparent),
@@ -100,10 +104,14 @@ fun WeatherCard(
                             showDialog.value = true
                         }
                     ) {
-                        Icon(Icons.Default.Settings,"")
+                        Icon(Icons.Default.Settings, "")
                     }
                 }
+
+                //Set space
                 Spacer(modifier = Modifier.height(14.dp))
+
+                // Weather icon and temperature
                 Box(
                     modifier = Modifier.size(200.dp)
                 ) {
@@ -114,12 +122,15 @@ fun WeatherCard(
                         contentScale = ContentScale.Fit
                     )
                 }
+
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = initDegree(degreeType,data.temperatureCelsius),
+                    text = initDegree(degreeType, data.temperatureCelsius),
                     fontSize = 50.sp,
                     color = Color.White
                 )
+
+                // Weather description and location name
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = data.weatherType.weatherDesc,
@@ -132,6 +143,8 @@ fun WeatherCard(
                     fontSize = 28.sp,
                     color = Color.White
                 )
+
+                // Navigation arrows icons
                 Spacer(modifier = Modifier.height(16.dp))
                 Box(modifier = Modifier.width(42.dp)) {
                     Image(
@@ -152,8 +165,11 @@ fun WeatherCard(
     }
 }
 
+// Composable function to display a settings dialog box
 @Composable
 fun DialogBox(onDismiss: () -> Unit) {
+
+    // Context for displaying a settings box
     val contextForToast = LocalContext.current.applicationContext
 
     Dialog(
@@ -171,6 +187,7 @@ fun DialogBox(onDismiss: () -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
+                // Header with icon
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -187,6 +204,7 @@ fun DialogBox(onDismiss: () -> Unit) {
                     )
                 }
 
+                // Text and degree unit options
                 Text(
                     modifier = Modifier.padding(start = 12.dp, end = 12.dp, top = 12.dp),
                     text = "Choose the unit of measurement for temperature",
@@ -195,11 +213,19 @@ fun DialogBox(onDismiss: () -> Unit) {
 
                 Spacer(modifier = Modifier.height(8.dp))
                 DegreeRadioButton()
+
                 Spacer(modifier = Modifier.height(8.dp))
 
+                // TextButton to apply selected degree type and dismiss the dialog
                 TextButton(
                     onClick = {
+                        // Dismiss the dialog
                         onDismiss()
+
+                        // Apply the selected degree type by loading weather data with the updated parameters
+                        activity!!.viewModel.loadWeatherByLocation(activity!!.dayIndex,
+                            activity!!.cityLocation ?: activity!!.locationList[0], false)
+
 //                        Toast.makeText(
 //                            contextForToast,
 //                            "Degree Type Applied",
@@ -207,6 +233,7 @@ fun DialogBox(onDismiss: () -> Unit) {
 //                        ).show()
                     }) {
                     Text(
+                        // Apply button text with custom color
                         text = "Apply",
                         color = Color(0xFF35898f)
                     )
@@ -217,16 +244,21 @@ fun DialogBox(onDismiss: () -> Unit) {
     }
 }
 
+// Composable function to display radio buttons for selecting degree unit
 @Composable
 fun DegreeRadioButton() {
+    // State for tracking the selected degree option
     var selectedOption = remember { mutableStateOf("Option1") }
 
-    if( degreeType == 2){
+    // Set the selected option based on the current degree type
+    if (degreeType == 2) {
         selectedOption = remember { mutableStateOf("Option2") }
     }
 
+    // Column containing two degree unit options
     Column {
-        Box( modifier = Modifier.width(140.dp)) {
+        // Celsius option
+        Box(modifier = Modifier.width(140.dp)) {
             RadioButton(
                 modifier = Modifier.align(Alignment.CenterStart),
                 selected = selectedOption.value == "Option1",
@@ -235,11 +267,15 @@ fun DegreeRadioButton() {
                     degreeType = 1
                 }
             )
-            Text("Celsius",  modifier = Modifier
-                .align(Alignment.CenterStart)
-                .padding(start = 42.dp))
+            Text(
+                "Celsius", modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .padding(start = 42.dp)
+            )
         }
-        Box( modifier = Modifier.width(140.dp)) {
+
+        // Fahrenheit option
+        Box(modifier = Modifier.width(140.dp)) {
             RadioButton(
                 modifier = Modifier.align(Alignment.CenterStart),
                 selected = selectedOption.value == "Option2",
@@ -248,22 +284,28 @@ fun DegreeRadioButton() {
                     degreeType = 2
                 }
             )
-            Text("Fahrenheit",  modifier = Modifier
-                .align(Alignment.CenterStart)
-                .padding(start = 42.dp))
+            Text(
+                "Fahrenheit", modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .padding(start = 42.dp)
+            )
         }
     }
 }
 
-private fun initDegree(type: Int, value: Double): String{
-    return if(type==2){
-        val f: Double = (value * 9/5) + 32
+// Function to format temperature based on the selected degree type
+fun initDegree(type: Int, value: Double): String {
+    // Convert temperature to Fahrenheit if the degree type is 2
+    return if (type == 2) {
+        val f: Double = (value * 9 / 5) + 32
         "${roundOffDecimal(f)}°F"
-    }else{
+    } else {
+        // Otherwise, use Celsius
         "$value°C"
     }
 }
 
+// Function to round off a decimal number
 private fun roundOffDecimal(number: Double): Double {
     return number.toBigDecimal().setScale(1, RoundingMode.UP).toDouble()
 }

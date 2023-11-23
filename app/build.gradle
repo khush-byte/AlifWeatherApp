@@ -80,4 +80,11 @@ dependencies {
 
     implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1"
     implementation "com.google.accompanist:accompanist-swiperefresh:0.27.0"
+
+    // Add Mockito dependencies
+    testImplementation 'org.mockito:mockito-core:3.12.4'
+    testImplementation 'org.mockito:mockito-android:3.12.4'
+
+    // Add Kotlin test support
+    testImplementation 'org.jetbrains.kotlin:kotlin-test-junit:1.5.31'
 }

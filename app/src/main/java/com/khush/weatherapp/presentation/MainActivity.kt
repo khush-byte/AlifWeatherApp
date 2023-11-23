@@ -60,22 +60,36 @@ import java.util.Locale
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    private val viewModel: WeatherViewModel by viewModels()
+    // ViewModel instance for handling weather data
+    val viewModel: WeatherViewModel by viewModels()
+
+    // Launcher for requesting location permissions
     private lateinit var permissionLauncher: ActivityResultLauncher<Array<String>>
-    private var dayIndex = 0
+
+    // Index to track the selected day for weather information
+    var dayIndex = 0
+
+    // List of predefined locations
     lateinit var locationList: ArrayList<Location>
+
+    // Selected location for weather information
     var cityLocation: Location? = null
 
+    // Reference to the current activity
+    lateinit var activity: MainActivity
+
+    // Initialize the activity and request location permissions
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Set the navigation bar color for Lollipop and above
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             val window = window
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
             window.navigationBarColor = android.graphics.Color.BLACK
         }
 
-        //Request permissions
+        // Request permissions using ActivityResultContracts
         permissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
         ) {
@@ -88,23 +102,30 @@ class MainActivity : ComponentActivity() {
             )
         )
 
+        // Initialize activity, location list, and set up UI using Jetpack Compose
+        activity = this
         initListOfLocation()
 
         //Create UI
         setContent {
+            // Mutable state variables to track drag gestures
             var offsetY by remember { mutableStateOf(0f) }
             var offsetX by remember { mutableStateOf(0f) }
 
             WeatherAppTheme {
+                // Main Box container for the UI
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .pointerInput(Unit) {
+                            // Detect drag gestures for swiping
                             detectDragGestures { change, dragAmount ->
                                 change.consume()
 
                                 val (x, y) = dragAmount
+                                // Handle horizontal drag gestures for changing days
                                 when {
+                                    // Handle swipe to the left
                                     x > 0 -> {
                                         if (offsetX > 50) {
                                             if (!isLoading) {
@@ -122,6 +143,7 @@ class MainActivity : ComponentActivity() {
                                         offsetX = 0F
                                     }
 
+                                    // Handle swipe to the right
                                     x < 0 -> {
                                         if (offsetX < -50) {
                                             if (!isLoading) {
@@ -140,10 +162,11 @@ class MainActivity : ComponentActivity() {
                                     }
                                 }
                                 when {
+                                    // Handle vertical drag gestures for reloading weather
                                     y > 0 -> {
                                         if (offsetY > 50) {
                                             if (!isLoading) {
-                                                viewModel.loadWeatherByLocation(dayIndex, cityLocation ?: locationList[0])
+                                                viewModel.loadWeatherByLocation(dayIndex, cityLocation ?: locationList[0], true)
                                                 isLoading = true
                                                 //Log.d(TAG, offsetY.toString())
                                             }
@@ -159,12 +182,15 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                 ) {
+                    // Column containing the main weather UI components
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
                             .background(DarkBlue)
                     ) {
                         Spacer(modifier = Modifier.height(4.dp))
+
+                        // Get the city name based on the current location
                         val city = viewModel.currentLocation?.let {
                             getCityName(
                                 it.latitude,
@@ -172,21 +198,32 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         cityLocation = viewModel.currentLocation
+
+                        // Display the dropdown list for selecting a city
                         CityDropDownList()
                         //Log.d(TAG, city?:"")
+
+                        // Display the weather forecast for the selected day and location
                         WeatherCard(
+                            activity,
                             city ?: "",
                             state = viewModel.state,
                             backgroundColor = DeepBlue
                         )
                         Spacer(modifier = Modifier.height(10.dp))
+
+                        // Display the weather forecast list for the selected day
                         WeatherForecast(dayIndex, state = viewModel.state)
                     }
+
+                    // Display loading indicator if data is still loading
                     if (viewModel.state.isLoading) {
                         CircularProgressIndicator(
                             modifier = Modifier.align(Alignment.Center)
                         )
                     }
+
+                    // Display error message and reload button if there's an error
                     viewModel.state.error?.let { error ->
                         Text(
                             text = "No internet connection or location is disabled.\nThe default location has been selected.\nPlease connect to the internet and reload.",
@@ -219,6 +256,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // Initialize the list of predefined locations
     private fun initListOfLocation() {
         locationList = ArrayList()
 
@@ -238,6 +276,7 @@ class MainActivity : ComponentActivity() {
         locationList.add(locKhatlon)
     }
 
+    // Get the city name based on latitude and longitude using Geocoder
     private fun getCityName(lat: Double, long: Double): String {
         var cityName: String?
         val geoCoder = Geocoder(this, Locale.getDefault())
@@ -321,7 +360,7 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                         //Log.d(TAG, locationList[0].provider ?: "")
-                        viewModel.loadWeatherByLocation(0, cityLocation ?: locationList[0])
+                        viewModel.loadWeatherByLocation(0, cityLocation ?: locationList[0], true)
                     }) {
                         Text(text = label)
                     }
@@ -330,15 +369,25 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // Restart the activity with a smooth transition
     private fun restart() {
+        // Disable activity transition animation
         overridePendingTransition(0, 0)
+
+        // Recreate the activity to reload the UI
         recreate()
         overridePendingTransition(0, 0)
     }
 
+    // Companion object to hold static constants and variables
     companion object {
+        // Tag for logging
         const val TAG = "MyTag"
+
+        // Flag indicating whether data is currently loading
         var isLoading = false
+
+        // Degree type constant (Celsius or Fahrenheit)
         var degreeType = 1
     }
 }

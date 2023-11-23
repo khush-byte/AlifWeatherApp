@@ -3,10 +3,16 @@ package com.khush.weatherapp.domain.weather
 import androidx.annotation.DrawableRes
 import com.khush.weatherapp.R
 
+// This class was used to convert weather type to message and icon
+// Sealed class representing various weather types with associated descriptions and drawable resources
 sealed class WeatherType(
+    // Description of the weather type
     val weatherDesc: String,
+
+    // Drawable resource representing the weather type
     @DrawableRes val iconRes: Int
 ) {
+    // Objects representing
     object ClearSky : WeatherType(
         weatherDesc = "Clear sky",
         iconRes = R.drawable.ic_sunny
@@ -116,9 +122,12 @@ sealed class WeatherType(
         iconRes = R.drawable.ic_rainythunder
     )
 
+    // Companion object with a function to map WMO weather codes to WeatherType objects
     companion object {
+        // Function to map WMO weather codes to WeatherType objects
         fun fromWMO(code: Int): WeatherType {
             return when(code) {
+                // WMO codes and corresponding WeatherType objects (mapping)
                 0 -> ClearSky
                 1 -> MainlyClear
                 2 -> PartlyCloudy
