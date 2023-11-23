@@ -1,20 +1,19 @@
 package com.khush.weatherapp.presentation
 
 import android.location.Location
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.khush.weatherapp.domain.location.LocationTracker
 import com.khush.weatherapp.domain.repository.WeatherRepository
 import com.khush.weatherapp.domain.util.Resource
+import com.khush.weatherapp.presentation.MainActivity.Companion.TAG
 import com.khush.weatherapp.presentation.MainActivity.Companion.isLoading
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -23,8 +22,7 @@ import javax.inject.Inject
 class WeatherViewModel @Inject constructor(
     private val repository: WeatherRepository,
     private val locationTracker: LocationTracker
-): ViewModel() {
-
+) : ViewModel() {
     var state by mutableStateOf(WeatherState())
         private set
 
@@ -37,8 +35,10 @@ class WeatherViewModel @Inject constructor(
                 error = null
             )
             locationTracker.getCurrentLocation()?.let { location ->
-                when(val result = repository.getWeatherData(location.latitude, location.longitude, index)) {
+                when (val result =
+                    repository.getWeatherData(location.latitude, location.longitude, index)) {
                     is Resource.Success -> {
+                        //Log.d(TAG, "${location.latitude}, ${location.longitude}")
                         delay(2000L)
                         state = state.copy(
                             weatherInfo = result.data,
@@ -48,6 +48,7 @@ class WeatherViewModel @Inject constructor(
                         isLoading = false
                         currentLocation = location
                     }
+
                     is Resource.Error -> {
                         state = state.copy(
                             weatherInfo = null,
@@ -65,32 +66,58 @@ class WeatherViewModel @Inject constructor(
         }
     }
 
-    fun updateWeatherInfo(index: Int) {
+    fun updateWeatherInfo(index: Int, location: Location) {
         viewModelScope.launch {
-            locationTracker.getCurrentLocation()?.let { location ->
-                when(val result = repository.getWeatherData(location.latitude, location.longitude, index)) {
-                    is Resource.Success -> {
-                        state = state.copy(
-                            weatherInfo = result.data,
-                            isLoading = false,
-                            error = null
-                        )
-                        isLoading = false
-                        currentLocation = location
-                    }
-                    is Resource.Error -> {
-                        state = state.copy(
-                            weatherInfo = null,
-                            isLoading = false,
-                            error = result.message
-                        )
-                    }
+            when (val result =
+                repository.getWeatherData(location.latitude, location.longitude, index)) {
+                is Resource.Success -> {
+                    state = state.copy(
+                        weatherInfo = result.data,
+                        isLoading = false,
+                        error = null
+                    )
+                    isLoading = false
+                    currentLocation = location
                 }
-            } ?: kotlin.run {
-                state = state.copy(
-                    isLoading = false,
-                    error = "Couldn't retrieve location. Make sure to grant permission and enable GPS."
-                )
+
+                is Resource.Error -> {
+                    state = state.copy(
+                        weatherInfo = null,
+                        isLoading = false,
+                        error = result.message
+                    )
+                }
+            }
+        }
+    }
+
+    fun loadWeatherByLocation(index: Int, location: Location) {
+        viewModelScope.launch {
+            state = state.copy(
+                isLoading = true,
+                error = null
+            )
+
+            when (val result =
+                repository.getWeatherData(location.latitude, location.longitude, index)) {
+                is Resource.Success -> {
+                    delay(2000L)
+                    state = state.copy(
+                        weatherInfo = result.data,
+                        isLoading = false,
+                        error = null
+                    )
+                    isLoading = false
+                    currentLocation = location
+                }
+
+                is Resource.Error -> {
+                    state = state.copy(
+                        weatherInfo = null,
+                        isLoading = false,
+                        error = result.message
+                    )
+                }
             }
         }
     }
