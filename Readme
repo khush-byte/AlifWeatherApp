@@ -1,0 +1,47 @@
+Weather Forecast Android Application
+
+Overview
+Welcome to the Weather Forecast Android Application! This application is developed in Kotlin and utilizes the Jetpack components to provide a seamless and efficient user experience. The main functionality of the app is to display weather forecasts either based on the user's GPS location or by selecting a place from a dropdown list.
+
+Features
+Weather Forecast: Get accurate and up-to-date weather forecasts for your location or any selected place.
+
+GPS Location: Allow the app to use your device's GPS to automatically fetch the weather forecast for your current location.
+
+Location Selection: Choose a location from a dropdown list to view the weather forecast for that specific place.
+
+Technologies Used
+Kotlin: The entire application is developed using the Kotlin programming language, making use of its concise and expressive syntax.
+
+Jetpack Components: Leveraging various Jetpack libraries, including LiveData, Compose, and ViewModel, to ensure a robust and maintainable architecture.
+
+Weather API: Integration with a reliable weather API to fetch accurate and real-time weather data.
+
+Getting Started
+Clone the Repository:
+
+bash
+Copy code
+git clone https://github.com/khush-byte/AlifWeatherApp.git
+Open in Android Studio:
+Open the project in Android Studio to explore the code and build the application.
+
+Run the Application:
+Connect your Android device or use an emulator to run the application and experience the weather forecast feature.
+
+Usage
+Upon launching the app, the default location will be selected, and the weather forecast will be displayed.
+
+To use GPS for weather updates, ensure location services are enabled on your device.
+
+Alternatively, select a specific location from the dropdown list to view the weather forecast for that location.
+
+Contributions
+Contributions are welcome! If you find any issues or have suggestions for improvement, feel free to open an issue or submit a pull request.
+
+License
+This Weather Forecast Android Application is licensed under the MIT License. Feel free to use, modify, and distribute the code.
+
+Acknowledgements
+Special thanks to 'Open-meteo' for providing reliable weather data.
+Enjoy using the Weather Forecast App! If you have any questions or feedback, please don't hesitate to contact me.
